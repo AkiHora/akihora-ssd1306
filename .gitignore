@@ -1,0 +1,47 @@
+# Build artifacts
+*.o
+*.obj
+*.d
+*.lst
+*.map
+*.elf
+*.hex
+*.bin
+*.out
+
+# Libraries
+*.a
+*.lib
+
+# Debug
+*.dep
+*.su
+
+# STM32CubeIDE / Eclipse
+.settings/
+.cproject
+.project
+*.launch
+
+# Keil uVision
+*.uvguix.*
+*.uvoptx
+*.uvprojx
+Listings/
+Objects/
+RTE/
+
+# VSCode / CLion / IDEs
+.vscode/
+.idea/
+
+# CMake / generic build dirs
+build/
+Build/
+Debug/
+Release/
+cmake-build-*/
+
+# OS junk
+.DS_Store
+Thumbs.db
