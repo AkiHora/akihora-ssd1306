@@ -1,4 +1,4 @@
-# SSD1306 OLED driver for STM32 (C99)
+# SSD1306 OLED driver for STM32
 
 Small, self-contained SSD1306 OLED driver for STM32 microcontrollers (F1 / L1) with an internal framebuffer, UTF-8 text rendering and a simple UI helper layer (menus, headers, progress bars, scrollbars).
 
@@ -8,97 +8,119 @@ The library is intended to be embedded into firmware projects (CubeIDE / Keil / 
 
 ## Features
 
-- **C99, no HAL dependency**
+- C99, no HAL dependency
   - Depends only on CMSIS device headers (`stm32f1xx.h` / `stm32l1xx.h`).
-  - Uses direct I2C register access and DWT / SysTick for timing.
+  - Uses direct I2C register access and internal timing helpers (DWT-based when available).
+   
+## Capabilities 
 
 - **Supported MCUs**
-  - `STM32F1` (`SSD1306_MCU_STM32F1`)
-  - `STM32L1` (`SSD1306_MCU_STM32L1`)
+  - `STM32F1`
+  - `STM32L1`
 
-- **Displays**
-  - SSD1306 over I2C
-  - Configurable display type in `ssd1306_conf.h`:
-    - `SSD1306_DISPLAY_128x64`
-    - `SSD1306_DISPLAY_64x32`
-    - `SSD1306_DISPLAY_64x32_FAKE`
+### Display control
+- Initialization and power control
+- Contrast and invert mode
+- Full screen clear / fill
+- Supports 128×64 and 64×32 SSD1306 panels (selected via ssd1306_conf.h)
 
-- **Framebuffer + dirty regions**
-  - Full framebuffer in RAM.
-  - All `_buffer_` functions modify only the framebuffer.
-  - `ssd1306_flush_dirty()` updates only modified areas.
+### Rendering model
+- Full 1-bit framebuffer in RAM
+- **Partial redraw (dirty regions):** driver updates only changed areas
+- Efficient for menus, bars, indicators and rapidly changing UI
 
-- **Text rendering**
-  - UTF-8 charset (`SSD1306_CHARSET_UTF8`) with internal conversion.
-  - Multiple bitmap fonts (enabled via `ssd1306_conf.h`):
-    - `SSD1306_INCLUDE_FONT_8x8`
-    - `SSD1306_INCLUDE_FONT_7x11`
-    - `SSD1306_INCLUDE_FONT_7x14`
-    - `SSD1306_INCLUDE_FONT_11x21`
-    - `SSD1306_INCLUDE_FONT_16x30`
-  - `SSD1306_FONT_DEFAULT` selects the default font.
-  - Drawing API:
-    - `ssd1306_buffer_draw_char_font(...)`
-    - `ssd1306_buffer_draw_char(...)`
-    - `ssd1306_buffer_draw_string_font(...)`
-    - `ssd1306_buffer_draw_string(...)` (uses `SSD1306_FONT_DEFAULT`)
+### Text rendering
+- UTF-8 input (configurable)
+- Multiple built-in bitmap fonts (8×8, 7×14, 11×21, 16×30)
+- Fast string rendering using the internal framebuffer
+- Optional alignment and clipping
 
-- **Drawing primitives**
-  - Pixel: `ssd1306_buffer_draw_pixel(...)`
-  - Lines, rectangles, triangles (outline and filled)
-  - Bitmaps (e.g. logo from `ssd1306_images.h`)
-  - All primitives work on the framebuffer and respect clipping.
+### Drawing primitives
+- Pixels, lines, rectangles (outline/filled)
+- Triangles (outline/filled)
+- Circles (outline/filled)
+- 1-bit bitmaps (icons, logos)
+- All primitives draw into the framebuffer and respect clipping
 
-- **Display control**
-  - `ssd1306_init()`
-  - `ssd1306_set_display_on(uint8_t on)`
-  - `ssd1306_set_contrast(uint8_t value)`
-  - `ssd1306_set_invert(uint8_t invert)`
-  - `ssd1306_display_clear()`
-  - `ssd1306_display_fill(SSD1306_COLOR_t color)`
-  - `ssd1306_flush_dirty()`
+### High-level UI helpers
+A small but practical UI layer on top of the framebuffer:
+- **Headers** (left/center/right align, underline styles)
+- **Progress bars** (value 0-100, optional percentage text)
+- **Scrollbars** (vertical/horizontal)
+- **Vertical menus** with scrolling and active item highlight  
+  (ideal for simple device interfaces)
 
-- **UI helper layer (`ssd1306_ui`)**
-  - Vertical menus with scrolling and active item highlight.
-  - Headers with alignment and underline styles.
-  - Progress bars with optional percentage display.
-  - Scrollbars.
-  - Used by demo tests in `ssd1306_tests.c`.
+### Timing and portability
+- DWT-based high-resolution delays (fallback included)
+- No HAL, only CMSIS headers
+- I2C access implemented in a single port file  
+  → easy to adapt to another STM32 or another MCU family
 
-- **Timing helpers**
-  - High-resolution delays based on DWT cycle counter (if available).
-  - Fallback using `SysTick->COUNTFLAG`.
-  - Public helpers in `ssd1306_utils.c`:
-    - `ssd1306_time_init(uint32_t hclk_hz)`
-    - `ssd1306_time_delay_ms(uint32_t ms)`
-    - `ssd1306_time_ticks_ms(void)`
+## Integration
+Copy the `include/` and `src/` folders into your project and add `include/` to your include paths.
+
+Configuration is done in `ssd1306_conf.h`:
+- select your display type
+- enable fonts
+- set I2C instance and address
+
+## Showcase
+
+### Screenshots
+![Header](demo/demo_hello.jpg)
+![Menu](demo/demo_menu.jpg)
+![Progress bar](demo/demo_progress.jpg)
+
+### Real device
+![Real device demo](demo/real_device_demo.gif)
+
+## Quick start
+
+```c
+#include "ssd1306.h"
+
+void ssd1306_example_showcase(void);
+
+int main(void) {
+	ssd1306_init();
+  ssd1306_example_showcase();
+
+	while (1) { }
+}
+```
 
 ---
 
 ## Directory layout
-
 ```text
 ssd1306/
   include/
     ssd1306.h         # Public API
-    ssd1306_conf.h    # User configuration (MCU, I2C, display, fonts, charset)
+    ssd1306_conf.h    # User configuration (I2C pins, display type, fonts, charset)
+    ssd1306_ui.h      # Public UI helpers (menus, headers, progress bars)
 
   src/
     ssd1306.c         # Public API implementation
-    ssd1306_priv.c    # Internal driver state, framebuffer, dirty flags, geometry
-    ssd1306_utils.c   # Geometry helpers, timing helpers (DWT / SysTick)
-    ssd1306_port.c    # Low-level I2C access and timing primitives
-    ssd1306_fonts.c   # Font bitmaps and font descriptors
-    ssd1306_images.c  # Example images (e.g. 64x64 logo)
-    ssd1306_ui.c      # High-level UI widgets (menus, headers, progress bars)
-    ssd1306_tests.c   # Demo / test routines
+    ssd1306_priv.c    # Internal state, framebuffer, dirty region tracking
+    ssd1306_port.c    # Low-level I2C access (register-level)
+    ssd1306_utils.c   # Geometry + timing helpers (DWT when available)
+    ssd1306_fonts.c   # Built-in font bitmaps
+    ssd1306_ui.c      # High-level UI widgets (menus, headers, bars)
 
-    inc/              # Internal headers
+    inc/              # Internal headers (not exposed to user code)
       ssd1306_cmd.h
-      ssd1306_fonts.h
-      ssd1306_images.h
-      ssd1306_port.h
       ssd1306_priv.h
-      ssd1306_tests.h
-      ssd1306_ui.h
+      ssd1306_port.h
       ssd1306_utils.h
+      ssd1306_fonts.h
+
+  images/
+    ssd1306_images.c
+    ssd1306_images.h
+
+  examples/
+    ssd1306_demo.c    # Minimal usage example
+
+  LICENSE
+  README.md
+

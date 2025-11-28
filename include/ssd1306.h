@@ -28,6 +28,21 @@
 #include "ssd1306_conf.h"
 #include "ssd1306_fonts.h"
 
+/* =======================================================================
+ * Version
+ * ======================================================================= */
+
+#define SSD1306_VERSION_MAJOR 0
+#define SSD1306_VERSION_MINOR 1
+#define SSD1306_VERSION_PATCH 0
+
+#define SSD1306_VERSION_STRING "0.1.0"
+
+
+/* =======================================================================
+ * Public types and macros
+ * ======================================================================= */
+
 /* Pixel color (without inversion) */
 typedef enum {
 	Black = 0x00,  /* pixel off  */
