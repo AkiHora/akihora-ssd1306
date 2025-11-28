@@ -71,7 +71,9 @@ Configuration is done in `ssd1306_conf.h`:
 ![Menu](demo/demo_menu.jpg)
 ![Progress bar](demo/demo_progress.jpg)
 
-### Real device
+### Deployed in a real industrial-grade device
+This SSD1306 driver is used in a precision resistance-emulation device featuring a bank of selectable reference resistors with fine adjustment capability.  
+The video below shows the library driving the full UI of the instrument in real time on STM32 hardware.
 ![Real device demo](demo/real_device_demo.gif)
 
 ## Quick start
@@ -83,7 +85,7 @@ void ssd1306_example_showcase(void);
 
 int main(void) {
 	ssd1306_init();
-  ssd1306_example_showcase();
+	ssd1306_example_showcase();
 
 	while (1) { }
 }
@@ -114,7 +116,7 @@ ssd1306/
       ssd1306_utils.h
       ssd1306_fonts.h
 
-  images/
+  assets/
     ssd1306_images.c
     ssd1306_images.h
 
